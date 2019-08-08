@@ -1,13 +1,49 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Web;
+﻿using System.IO;
+using System.Text;
+using System.Text.RegularExpressions;
 
 namespace CommonWordsInAllFilesAPI.Services
 {
     public class WordHelper
     {
-        public string InsertWord(Trie root, string word,int fileIndex)
+        public string ExtractCommonWords(string[] filePaths)
+        {
+            StringBuilder sb = new StringBuilder();
+            Trie root = new Trie();
+            Regex reg = new Regex("^[a-zA-Z0-9]+$");
+            for (int i = 0; i < filePaths.Length; i++)
+            {
+                string path = filePaths[i];
+                using (StreamReader reader = new StreamReader(path))
+                {
+                    string line;
+                    while ((line = reader.ReadLine()) != null)
+                    {
+                        var text = line.Split(' ');
+                        for (int j = 0; j < text.Length; j++)
+                        {
+                            if (reg.IsMatch(text[i]))
+                            {
+                                if (i == filePaths.Length - 1)
+                                {
+                                    string common = InsertWord(root, text[j], i);
+                                    if (!string.IsNullOrEmpty(common))
+                                    {
+                                        sb.Append(common + " ");
+                                    }
+                                }
+                                else
+                                {
+                                    InsertWord(root, text[j], i);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            return sb.ToString();
+        }
+        private string InsertWord(Trie root, string word,int fileIndex)
         {
             if (string.IsNullOrEmpty(word))
             {
